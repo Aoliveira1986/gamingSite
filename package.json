@@ -1,0 +1,28 @@
+{
+  "name": "gamezone-3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@sveltejs/adapter-node": "^5.2.9",
+    "@sveltejs/kit": "^2.8.5",
+    "svelte": "^5.2.7",
+    "three": "^0.165.0",
+    "vite": "^5.4.11"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-cloudflare": "^7.2.8",
+    "@sveltejs/adapter-vercel": "^6.3.3",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "@types/node": "^22.9.0",
+    "@types/three": "^0.184.1",
+    "svelte-check": "^4.1.0",
+    "typescript": "^5.6.3"
+  }
+}
