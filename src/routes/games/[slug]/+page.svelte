@@ -26,6 +26,7 @@
   let mountNode: HTMLDivElement;
   let gameInstance: GameInstance | undefined;
   let currentGameId = '';
+  let isFullscreen = false;
   let snapshot: GameSnapshot = {
     score: 0,
     speed: 10,
@@ -40,13 +41,21 @@
 
   onMount(() => {
     initializeGame();
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    window.addEventListener('keydown', handlePageKeyDown);
 
     return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreenState);
+      window.removeEventListener('keydown', handlePageKeyDown);
       disposeGame();
     };
   });
 
   onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('fullscreenchange', syncFullscreenState);
+      window.removeEventListener('keydown', handlePageKeyDown);
+    }
     disposeGame();
   });
 
@@ -96,6 +105,26 @@
 
   function startGame() {
     gameInstance?.start();
+  }
+
+  async function toggleFullscreen() {
+    if (!mountNode) return;
+
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else {
+      await mountNode.requestFullscreen();
+    }
+  }
+
+  function syncFullscreenState() {
+    isFullscreen = document.fullscreenElement === mountNode;
+  }
+
+  function handlePageKeyDown(event: KeyboardEvent) {
+    if (event.key.toLowerCase() !== 'f') return;
+    event.preventDefault();
+    toggleFullscreen();
   }
 
   function stateLabel() {
@@ -156,6 +185,9 @@
         <span>{snapshot.statLabel ?? 'Estado'}</span>
         <strong>{snapshot.statLabel ? snapshot.statValue : stateLabel()}</strong>
       </div>
+      <button class="reset" type="button" on:click={toggleFullscreen}>
+        {isFullscreen ? 'Sair ecrã' : 'Ecrã cheio'}
+      </button>
       <button class="reset" type="button" on:click={restartGame}>Recomecar</button>
     </div>
 
@@ -163,7 +195,7 @@
       {#if snapshot.state !== 'running'}
         <div class="overlay">
           <h2>{snapshot.state === 'gameover' ? 'Game Over' : data.game.name}</h2>
-          <p>{helpText()}</p>
+          <p>{helpText()} Pressiona F para alternar ecrã cheio.</p>
           <button class="btn" on:click={snapshot.state === 'gameover' ? restartGame : startGame}>
             {snapshot.state === 'gameover' ? 'Recomecar' : 'Comecar'}
           </button>
@@ -187,7 +219,7 @@
     left: 14px;
     right: 14px;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
     pointer-events: none;
   }
@@ -242,6 +274,14 @@
     touch-action: none;
   }
 
+  .stage:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+
   .stage :global(canvas) {
     display: block;
     width: 100%;
@@ -282,7 +322,7 @@
 
   @media (max-width: 620px) {
     .hud {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
     }
 
     .stage {
