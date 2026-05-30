@@ -33,6 +33,9 @@ npm run preview  # preview do build
 - `Space Dodge 3D` em `/games/space-dodge`.
 - `Arena Ball 3D` em `/games/arena-ball`.
 - `Neon Flight 3D` em `/games/neon-flight`.
+- `Brick Breaker 100` em `/games/brick-breaker-100`.
+- `Space Invaders 100` em `/games/space-invaders-100`.
+- `Super Platformer 100` em `/games/super-platformer`.
 - Chat local com visual old school moderno, pronto para futura ligacao via Socket.IO.
 - Layout responsivo desktop/mobile.
 - Thumbnails geradas em CSS, sem dependencia de imagens externas.
@@ -42,6 +45,7 @@ npm run preview  # preview do build
 
 - `WASD` ou setas: movimento.
 - `Espaco`: salto, impulso ou boost, dependendo do jogo.
+- `Espaco`: tambem dispara no `Space Invaders 100`.
 - `Enter`: recomecar quando o jogo nao esta a correr.
 - Botao `Recomecar`: reinicia a partida ativa.
 
@@ -67,6 +71,9 @@ src/
       games.ts
       Arcade3D/
         Arcade3DGame.ts
+        types.ts
+      ClassicArcade/
+        ClassicArcadeGame.ts
         types.ts
       CubeRunner3D/
         CubeRunnerGame.ts

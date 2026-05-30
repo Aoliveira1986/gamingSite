@@ -127,6 +127,28 @@
     clip-path: polygon(50% 0, 100% 100%, 50% 72%, 0 100%);
   }
 
+  .brick-breaker .object {
+    height: 22px;
+  }
+
+  .brick-breaker .two,
+  .brick-breaker .three {
+    border-radius: 5px;
+  }
+
+  .space-invaders .object {
+    clip-path: polygon(18% 20%, 82% 20%, 100% 58%, 78% 100%, 50% 74%, 22% 100%, 0 58%);
+  }
+
+  .super-platformer .object {
+    border-radius: 8px 8px 4px 4px;
+  }
+
+  .super-platformer .track {
+    height: 12px;
+    border-radius: 5px;
+  }
+
   .content {
     display: grid;
     gap: 13px;

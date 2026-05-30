@@ -5,7 +5,14 @@ export type GameDefinition = {
   name: string;
   description: string;
   category: string;
-  thumbnail: 'cube-runner' | 'space-dodge' | 'arena-ball' | 'neon-flight';
+  thumbnail:
+    | 'cube-runner'
+    | 'space-dodge'
+    | 'arena-ball'
+    | 'neon-flight'
+    | 'brick-breaker'
+    | 'space-invaders'
+    | 'super-platformer';
   route: string;
   status: GameStatus;
   accent: string;
@@ -55,6 +62,39 @@ export const games: GameDefinition[] = [
     route: '/games/neon-flight',
     status: 'available',
     accent: '#ff4fb8'
+  },
+  {
+    id: 'brick-breaker-100',
+    name: 'Brick Breaker 100',
+    description:
+      'Barra em baixo, bola rapida e blocos dinamicos ao longo de 100 niveis de dificuldade progressiva.',
+    category: 'Arcade de reflexos',
+    thumbnail: 'brick-breaker',
+    route: '/games/brick-breaker-100',
+    status: 'available',
+    accent: '#22d3ee'
+  },
+  {
+    id: 'space-invaders-100',
+    name: 'Space Invaders 100',
+    description:
+      'Defende a zona neon contra vagas espaciais com 100 niveis, tiros inimigos e velocidade crescente.',
+    category: 'Shooter arcade',
+    thumbnail: 'space-invaders',
+    route: '/games/space-invaders-100',
+    status: 'available',
+    accent: '#a78bfa'
+  },
+  {
+    id: 'super-platformer',
+    name: 'Super Platformer 100',
+    description:
+      'Uma aventura de plataformas inspirada nos classicos, com moedas, inimigos, saltos e 100 fases.',
+    category: 'Plataformas',
+    thumbnail: 'super-platformer',
+    route: '/games/super-platformer',
+    status: 'available',
+    accent: '#fbbf24'
   }
 ];
 

@@ -4,6 +4,8 @@
   import GameLayout from '$lib/components/GameLayout.svelte';
   import { Arcade3DGame } from '$lib/games/Arcade3D/Arcade3DGame';
   import type { ArcadeGameId, ArcadeSnapshot } from '$lib/games/Arcade3D/types';
+  import { ClassicArcadeGame } from '$lib/games/ClassicArcade/ClassicArcadeGame';
+  import type { ClassicGameId, ClassicSnapshot } from '$lib/games/ClassicArcade/types';
   import { CubeRunnerGame } from '$lib/games/CubeRunner3D/CubeRunnerGame';
   import type { CubeRunnerSnapshot } from '$lib/games/CubeRunner3D/types';
   import type { PageData } from './$types';
@@ -14,7 +16,7 @@
     dispose: () => void;
   };
 
-  type GameSnapshot = (CubeRunnerSnapshot | ArcadeSnapshot) & {
+  type GameSnapshot = (CubeRunnerSnapshot | ArcadeSnapshot | ClassicSnapshot) & {
     statLabel?: string;
     statValue?: number;
   };
@@ -31,6 +33,7 @@
   };
 
   $: arcadeId = data.game.id as ArcadeGameId;
+  $: classicId = data.game.id as ClassicGameId;
   $: if (browser && mountNode && currentGameId !== data.game.id) {
     initializeGame();
   }
@@ -61,6 +64,13 @@
 
     if (data.game.id === 'cube-runner') {
       gameInstance = new CubeRunnerGame(mountNode, {
+        onUpdate: (nextSnapshot) => {
+          snapshot = nextSnapshot;
+        }
+      });
+    } else if (isClassicGame(data.game.id)) {
+      gameInstance = new ClassicArcadeGame(mountNode, {
+        id: classicId,
         onUpdate: (nextSnapshot) => {
           snapshot = nextSnapshot;
         }
@@ -107,7 +117,23 @@
       return 'Move a esfera com WASD ou setas, segura Espaco para ganhar impulso, apanha orbes e evita os cubos vermelhos.';
     }
 
+    if (data.game.id === 'brick-breaker-100') {
+      return 'Move a barra com A/D ou setas, mantem a bola viva e limpa todos os blocos. Sao 100 niveis cada vez mais apertados.';
+    }
+
+    if (data.game.id === 'space-invaders-100') {
+      return 'Move com A/D ou setas e dispara com Espaco. Elimina todas as vagas espaciais ao longo de 100 niveis.';
+    }
+
+    if (data.game.id === 'super-platformer') {
+      return 'Corre com A/D ou setas, salta com Espaco/W/seta cima, apanha moedas, pisa inimigos e chega a bandeira.';
+    }
+
     return 'Voa com WASD ou setas, usa Espaco para boost e passa pelo centro dos aneis neon sem tocar na borda.';
+  }
+
+  function isClassicGame(id: string): id is ClassicGameId {
+    return id === 'brick-breaker-100' || id === 'space-invaders-100' || id === 'super-platformer';
   }
 </script>
 
