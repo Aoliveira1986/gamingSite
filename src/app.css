@@ -37,6 +37,10 @@ body {
     linear-gradient(180deg, #070a12 0%, #0b1020 58%, #070a12 100%);
 }
 
+body.game-fullscreen-lock {
+  overflow: hidden;
+}
+
 a {
   color: inherit;
   text-decoration: none;
