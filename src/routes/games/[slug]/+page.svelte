@@ -55,7 +55,9 @@
 
   $: arcadeId = data.game.id as ArcadeGameId;
   $: classicId = data.game.id as ClassicGameId;
+  $: requiresFullscreen = isClassicGame(data.game.id);
   $: lockedForTesting = isClassicGame(data.game.id) && !hasTestAccess;
+  $: fullscreenRequired = requiresFullscreen && !isFullscreen;
   $: if (browser && mountNode && !lockedForTesting && currentGameId !== data.game.id) {
     initializeGame();
   }
@@ -120,11 +122,31 @@
   }
 
   function restartGame() {
+    if (fullscreenRequired) {
+      enterRequiredFullscreen();
+      return;
+    }
     gameInstance?.restart();
   }
 
   function startGame() {
+    if (fullscreenRequired) {
+      enterRequiredFullscreen();
+      return;
+    }
     gameInstance?.start();
+  }
+
+  async function enterRequiredFullscreen() {
+    await toggleFullscreen();
+
+    if (requiresFullscreen && (getFullscreenElement() === gameFrame || pseudoFullscreen)) {
+      if (snapshot.state === 'gameover') {
+        gameInstance?.restart();
+      } else {
+        gameInstance?.start();
+      }
+    }
   }
 
   async function toggleFullscreen() {
@@ -282,12 +304,27 @@
           {isFullscreen ? 'Sair' : 'Tela cheia'}
         </button>
 
-        {#if snapshot.state !== 'running'}
+        {#if fullscreenRequired || snapshot.state !== 'running'}
           <div class="overlay">
-            <h2>{snapshot.state === 'gameover' ? 'Game Over' : data.game.name}</h2>
-            <p>{helpText()} Pressiona F ou usa o botao Tela cheia.</p>
-            <button class="btn" on:click={snapshot.state === 'gameover' ? restartGame : startGame}>
-              {snapshot.state === 'gameover' ? 'Recomecar' : 'Comecar'}
+            <h2>
+              {fullscreenRequired
+                ? 'Fullscreen obrigatorio'
+                : snapshot.state === 'gameover'
+                  ? 'Game Over'
+                  : data.game.name}
+            </h2>
+            <p>
+              {#if fullscreenRequired}
+                Este jogo deve ser jogado em tela cheia para manter os controlos e a area de jogo estaveis.
+              {:else}
+                {helpText()} Pressiona F ou usa o botao Tela cheia.
+              {/if}
+            </p>
+            <button
+              class="btn"
+              on:click={fullscreenRequired ? enterRequiredFullscreen : snapshot.state === 'gameover' ? restartGame : startGame}
+            >
+              {fullscreenRequired ? 'Jogar em fullscreen' : snapshot.state === 'gameover' ? 'Recomecar' : 'Comecar'}
             </button>
           </div>
         {/if}
@@ -499,34 +536,35 @@
     z-index: 4;
     left: 14px;
     right: 14px;
-    bottom: 14px;
+    bottom: max(10px, env(safe-area-inset-bottom));
     display: none;
     align-items: end;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     pointer-events: none;
   }
 
   .pad {
     display: grid;
-    grid-template-columns: 58px 58px 58px;
+    grid-template-columns: repeat(3, 52px);
     align-items: center;
-    gap: 8px;
+    gap: 7px;
   }
 
   .vertical {
     display: grid;
-    gap: 8px;
+    gap: 7px;
   }
 
   .touch-controls button {
     pointer-events: auto;
-    width: 58px;
-    height: 58px;
+    width: 52px;
+    height: 52px;
     border: 1px solid color-mix(in srgb, var(--accent), transparent 48%);
     border-radius: 8px;
     background: rgba(2, 6, 23, 0.72);
     color: #eff6ff;
+    font-size: 0.9rem;
     font-weight: 900;
     backdrop-filter: blur(12px);
   }
@@ -538,10 +576,10 @@
   }
 
   .touch-controls .action {
-    width: 82px;
-    height: 82px;
+    width: 70px;
+    height: 70px;
     border-radius: 999px;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
   }
 
   .test-gate {
@@ -620,7 +658,65 @@
 
     .stage-fullscreen {
       right: 10px;
-      bottom: 104px;
+      bottom: 90px;
+    }
+  }
+
+  @media (max-width: 430px) {
+    .touch-controls {
+      left: 8px;
+      right: 8px;
+      gap: 8px;
+    }
+
+    .pad {
+      grid-template-columns: repeat(3, 46px);
+      gap: 6px;
+    }
+
+    .vertical {
+      gap: 6px;
+    }
+
+    .touch-controls button {
+      width: 46px;
+      height: 46px;
+      font-size: 0.78rem;
+    }
+
+    .touch-controls .action {
+      width: 62px;
+      height: 62px;
+      font-size: 0.72rem;
+    }
+
+    .stage-fullscreen {
+      bottom: 78px;
+      min-height: 36px;
+      padding: 0 10px;
+      font-size: 0.78rem;
+    }
+  }
+
+  @media (max-height: 700px) {
+    .hud div,
+    .hud .reset {
+      min-height: 34px;
+      padding: 6px;
+    }
+
+    .touch-controls button {
+      width: 44px;
+      height: 44px;
+    }
+
+    .pad {
+      grid-template-columns: repeat(3, 44px);
+    }
+
+    .touch-controls .action {
+      width: 58px;
+      height: 58px;
     }
   }
 
