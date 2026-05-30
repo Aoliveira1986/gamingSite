@@ -12,7 +12,10 @@ export type GameDefinition = {
     | 'neon-flight'
     | 'brick-breaker'
     | 'space-invaders'
-    | 'super-platformer';
+    | 'super-platformer'
+    | 'snake'
+    | 'tetris'
+    | 'shadow-agent';
   route: string;
   status: GameStatus;
   accent: string;
@@ -95,6 +98,39 @@ export const games: GameDefinition[] = [
     route: '/games/super-platformer',
     status: 'available',
     accent: '#fbbf24'
+  },
+  {
+    id: 'snake-100',
+    name: 'Snake Grid 100',
+    description:
+      'Snake moderno em arena neon, comida dinamica e 100 niveis com velocidade cada vez mais apertada.',
+    category: 'Arcade estrategico',
+    thumbnail: 'snake',
+    route: '/games/snake-100',
+    status: 'available',
+    accent: '#72f59f'
+  },
+  {
+    id: 'tetris-100',
+    name: 'Tetris Stack 100',
+    description:
+      'Empilha pecas, limpa linhas e sobe por 100 niveis de queda progressivamente mais rapida.',
+    category: 'Puzzle arcade',
+    thumbnail: 'tetris',
+    route: '/games/tetris-100',
+    status: 'available',
+    accent: '#a78bfa'
+  },
+  {
+    id: 'shadow-agent',
+    name: 'Shadow Agent',
+    description:
+      'Infiltra uma zona vigiada, evita cones de luz, recolhe caixas de intel e neutraliza agentes.',
+    category: 'Stealth tactico',
+    thumbnail: 'shadow-agent',
+    route: '/games/shadow-agent',
+    status: 'available',
+    accent: '#ff4fb8'
   }
 ];
 

@@ -215,11 +215,21 @@
     if (data.game.id === 'brick-breaker-100') return 'Move a barra com setas, rato ou toque.';
     if (data.game.id === 'space-invaders-100') return 'Move com setas/toque e dispara com Espaco ou toque.';
     if (data.game.id === 'super-platformer') return 'Corre com setas/toque e salta com Espaco ou Acao.';
+    if (data.game.id === 'snake-100') return 'Muda de direcao com setas, WASD ou toque.';
+    if (data.game.id === 'tetris-100') return 'Move com esquerda/direita, baixa com baixo e roda com Acao.';
+    if (data.game.id === 'shadow-agent') return 'Move em silencio, evita cones de visao e usa Acao para dash.';
     return 'WASD ou setas pilotam. Espaco faz boost.';
   }
 
   function isClassicGame(id: string): id is ClassicGameId {
-    return id === 'brick-breaker-100' || id === 'space-invaders-100' || id === 'super-platformer';
+    return (
+      id === 'brick-breaker-100' ||
+      id === 'space-invaders-100' ||
+      id === 'super-platformer' ||
+      id === 'snake-100' ||
+      id === 'tetris-100' ||
+      id === 'shadow-agent'
+    );
   }
 
   function testAccessKey(id: string) {

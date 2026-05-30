@@ -149,6 +149,37 @@
     border-radius: 5px;
   }
 
+  .snake .object {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  .snake .two,
+  .snake .three {
+    opacity: 1;
+  }
+
+  .tetris .object {
+    border-radius: 5px;
+    box-shadow:
+      34px 0 0 color-mix(in srgb, var(--accent), white 8%),
+      0 34px 0 color-mix(in srgb, var(--accent), transparent 18%),
+      34px 34px 0 color-mix(in srgb, var(--accent), white 18%),
+      0 18px 38px rgba(0, 0, 0, 0.34);
+  }
+
+  .shadow-agent .object {
+    border-radius: 999px;
+  }
+
+  .shadow-agent .two {
+    width: 68px;
+    height: 68px;
+    clip-path: polygon(0 50%, 100% 8%, 100% 92%);
+    opacity: 0.52;
+  }
+
   .content {
     display: grid;
     gap: 13px;
