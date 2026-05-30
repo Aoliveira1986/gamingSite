@@ -32,6 +32,9 @@ export class ClassicArcadeGame {
 	private lastTime = 0;
 	private safeTimer = 0;
 	private pointerX: number | null = null;
+	private touchMove = 0;
+	private touchJump = false;
+	private touchFire = false;
 
 	private paddle = { x: 420, y: 590, w: 130, h: 16 };
 	private ball = { x: 480, y: 520, r: 9, vx: 260, vy: -280 };
@@ -73,6 +76,12 @@ export class ClassicArcadeGame {
 			this.emitUpdate();
 			this.canvas.focus({ preventScroll: true });
 		}
+	}
+
+	setTouchControls(next: { move?: number; jump?: boolean; fire?: boolean }) {
+		this.touchMove = next.move ?? this.touchMove;
+		this.touchJump = next.jump ?? this.touchJump;
+		this.touchFire = next.fire ?? this.touchFire;
 	}
 
 	restart() {
@@ -223,7 +232,7 @@ export class ClassicArcadeGame {
 	}
 
 	private updateBreaker(delta: number) {
-		const move = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
+		const move = this.touchMove || this.input('d', 'arrowright') - this.input('a', 'arrowleft');
 		if (this.pointerX !== null) {
 			this.paddle.x = clamp(this.pointerX - this.paddle.w / 2, 10, this.width - this.paddle.w - 10);
 		} else {
@@ -288,14 +297,14 @@ export class ClassicArcadeGame {
 	}
 
 	private updateInvaders(delta: number) {
-		const move = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
+		const move = this.touchMove || this.input('d', 'arrowright') - this.input('a', 'arrowleft');
 		if (this.pointerX !== null) {
 			this.invaderPlayer.x = clamp(this.pointerX - this.invaderPlayer.w / 2, 12, this.width - this.invaderPlayer.w - 12);
 		} else {
 			this.invaderPlayer.x = clamp(this.invaderPlayer.x + move * delta * 410, 12, this.width - this.invaderPlayer.w - 12);
 		}
 		this.invaderPlayer.cooldown -= delta;
-		if (this.keys.has(' ') && this.invaderPlayer.cooldown <= 0) {
+		if ((this.keys.has(' ') || this.touchFire) && this.invaderPlayer.cooldown <= 0) {
 			this.fireInvaderShot();
 		}
 
@@ -368,9 +377,9 @@ export class ClassicArcadeGame {
 	}
 
 	private updatePlatformer(delta: number) {
-		const move = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
+		const move = this.touchMove || this.input('d', 'arrowright') - this.input('a', 'arrowleft');
 		this.hero.vx = move * (230 + this.level * 0.8);
-		if ((this.keys.has(' ') || this.keys.has('w') || this.keys.has('arrowup')) && this.hero.grounded) {
+		if ((this.touchJump || this.keys.has(' ') || this.keys.has('w') || this.keys.has('arrowup')) && this.hero.grounded) {
 			this.hero.vy = -510;
 			this.hero.grounded = false;
 		}

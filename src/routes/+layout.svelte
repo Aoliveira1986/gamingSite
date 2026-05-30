@@ -54,6 +54,12 @@
   }
 
   @media (max-width: 760px) {
+    :global(.chat) {
+      min-height: 260px;
+    }
+  }
+
+  @media (max-width: 760px) {
     .workspace {
       width: min(100% - 22px, 1480px);
       padding-top: 18px;

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { ArcadeGameId, ArcadeGameOptions, ArcadeSnapshot } from './types';
+import type { ArcadeGameId, ArcadeGameOptions, ArcadeSnapshot, ArcadeTouchControls } from './types';
 
 type MovingObject = {
   mesh: THREE.Mesh;
@@ -67,6 +67,7 @@ export class Arcade3DGame {
   private statValue = 3;
   private spawnTimer = 0;
   private playerVelocity = new THREE.Vector3();
+  private touchControls: ArcadeTouchControls = {};
 
   constructor(container: HTMLElement, options: ArcadeGameOptions) {
     this.container = container;
@@ -102,6 +103,13 @@ export class Arcade3DGame {
     this.state = 'running';
     this.clock.getDelta();
     this.emitUpdate();
+  }
+
+  setTouchControls(next: ArcadeTouchControls) {
+    this.touchControls = {
+      ...this.touchControls,
+      ...next
+    };
   }
 
   dispose() {
@@ -297,9 +305,9 @@ export class Arcade3DGame {
   }
 
   private updateFlight(delta: number) {
-    const inputX = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
-    const inputY = this.input('w', 'arrowup') - this.input('s', 'arrowdown');
-    const boost = this.keys.has(' ') ? 1.28 : 1;
+    const inputX = this.touchControls.moveX ?? this.input('d', 'arrowright') - this.input('a', 'arrowleft');
+    const inputY = this.touchControls.moveY ?? this.input('w', 'arrowup') - this.input('s', 'arrowdown');
+    const boost = this.keys.has(' ') || this.touchControls.action ? 1.28 : 1;
     this.speed = Math.min(this.mode.baseSpeed + 15, this.speed * boost);
 
     this.player.position.x = THREE.MathUtils.clamp(this.player.position.x + inputX * delta * 7.5, -4.6, 4.6);
@@ -333,9 +341,9 @@ export class Arcade3DGame {
   }
 
   private updateArena(delta: number) {
-    const inputX = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
-    const inputZ = this.input('s', 'arrowdown') - this.input('w', 'arrowup');
-    const acceleration = this.keys.has(' ') ? 24 : 17;
+    const inputX = this.touchControls.moveX ?? this.input('d', 'arrowright') - this.input('a', 'arrowleft');
+    const inputZ = -(this.touchControls.moveY ?? this.input('w', 'arrowup') - this.input('s', 'arrowdown'));
+    const acceleration = this.keys.has(' ') || this.touchControls.action ? 24 : 17;
     this.playerVelocity.x += inputX * acceleration * delta;
     this.playerVelocity.z += inputZ * acceleration * delta;
     this.playerVelocity.multiplyScalar(0.92);

@@ -31,6 +31,8 @@ export class CubeRunnerGame {
   private verticalVelocity = 0;
   private spawnTimer = 0;
   private disposed = false;
+  private touchMove = 0;
+  private touchJump = false;
 
   constructor(container: HTMLElement, options: CubeRunnerOptions = {}) {
     this.container = container;
@@ -67,6 +69,11 @@ export class CubeRunnerGame {
     this.state = 'running';
     this.clock.getDelta();
     this.emitUpdate();
+  }
+
+  setTouchControls(next: { move?: number; jump?: boolean }) {
+    this.touchMove = next.move ?? this.touchMove;
+    this.touchJump = next.jump ?? this.touchJump;
   }
 
   dispose() {
@@ -243,6 +250,20 @@ export class CubeRunnerGame {
     if (this.spawnTimer <= 0) {
       this.spawnObstacle();
       this.spawnTimer = Math.max(0.42, 1.1 - this.speed / 32 + Math.random() * 0.32);
+    }
+
+    if (this.touchMove < -0.35) {
+      this.currentLane = Math.max(0, this.currentLane - 1);
+      this.targetX = LANES[this.currentLane];
+      this.touchMove = 0;
+    }
+    if (this.touchMove > 0.35) {
+      this.currentLane = Math.min(LANES.length - 1, this.currentLane + 1);
+      this.targetX = LANES[this.currentLane];
+      this.touchMove = 0;
+    }
+    if (this.touchJump && this.player.position.y <= PLAYER_SIZE / 2 + 0.04) {
+      this.verticalVelocity = 8.2;
     }
 
     this.player.position.x = THREE.MathUtils.lerp(this.player.position.x, this.targetX, delta * 12);

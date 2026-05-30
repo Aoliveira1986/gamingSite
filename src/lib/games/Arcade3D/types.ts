@@ -12,3 +12,9 @@ export type ArcadeGameOptions = {
   id: ArcadeGameId;
   onUpdate?: (snapshot: ArcadeSnapshot) => void;
 };
+
+export type ArcadeTouchControls = {
+  moveX?: number;
+  moveY?: number;
+  action?: boolean;
+};
