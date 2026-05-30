@@ -239,6 +239,7 @@
     border-radius: 8px;
     background: #070a12;
     box-shadow: var(--shadow);
+    touch-action: none;
   }
 
   .stage :global(canvas) {

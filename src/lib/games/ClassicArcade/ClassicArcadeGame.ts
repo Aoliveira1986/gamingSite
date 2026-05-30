@@ -30,6 +30,8 @@ export class ClassicArcadeGame {
 	private width = 960;
 	private height = 640;
 	private lastTime = 0;
+	private safeTimer = 0;
+	private pointerX: number | null = null;
 
 	private paddle = { x: 420, y: 590, w: 130, h: 16 };
 	private ball = { x: 480, y: 520, r: 9, vx: 260, vy: -280 };
@@ -66,9 +68,10 @@ export class ClassicArcadeGame {
 	start() {
 		if (this.state === 'ready') {
 			this.state = 'running';
+			this.safeTimer = 1.2;
 			this.lastTime = performance.now();
 			this.emitUpdate();
-			this.canvas.focus();
+			this.canvas.focus({ preventScroll: true });
 		}
 	}
 
@@ -76,10 +79,11 @@ export class ClassicArcadeGame {
 		this.score = 0;
 		this.level = 1;
 		this.state = 'running';
+		this.safeTimer = 1.2;
 		this.lastTime = performance.now();
 		this.resetMode();
 		this.emitUpdate();
-		this.canvas.focus();
+		this.canvas.focus({ preventScroll: true });
 	}
 
 	dispose() {
@@ -87,6 +91,8 @@ export class ClassicArcadeGame {
 		cancelAnimationFrame(this.frame);
 		window.removeEventListener('keydown', this.handleKeyDown);
 		window.removeEventListener('keyup', this.handleKeyUp);
+		this.canvas.removeEventListener('pointermove', this.handlePointerMove);
+		this.canvas.removeEventListener('pointerdown', this.handlePointerDown);
 		this.resizeObserver?.disconnect();
 		this.canvas.remove();
 	}
@@ -94,6 +100,8 @@ export class ClassicArcadeGame {
 	private bindEvents() {
 		window.addEventListener('keydown', this.handleKeyDown);
 		window.addEventListener('keyup', this.handleKeyUp);
+		this.canvas.addEventListener('pointermove', this.handlePointerMove);
+		this.canvas.addEventListener('pointerdown', this.handlePointerDown);
 		this.resizeObserver = new ResizeObserver(() => this.resize());
 		this.resizeObserver.observe(this.container);
 	}
@@ -113,6 +121,27 @@ export class ClassicArcadeGame {
 
 	private handleKeyUp = (event: KeyboardEvent) => {
 		this.keys.delete(event.key.toLowerCase());
+	};
+
+	private handlePointerMove = (event: PointerEvent) => {
+		const rect = this.canvas.getBoundingClientRect();
+		this.pointerX = event.clientX - rect.left;
+	};
+
+	private handlePointerDown = (event: PointerEvent) => {
+		event.preventDefault();
+		this.handlePointerMove(event);
+
+		if (this.state !== 'running') {
+			this.restart();
+			return;
+		}
+
+		if (this.options.id === 'space-invaders-100') this.fireInvaderShot();
+		if (this.options.id === 'super-platformer' && this.hero.grounded) {
+			this.hero.vy = -510;
+			this.hero.grounded = false;
+		}
 	};
 
 	private resize() {
@@ -158,6 +187,7 @@ export class ClassicArcadeGame {
 	}
 
 	private update(delta: number) {
+		this.safeTimer = Math.max(0, this.safeTimer - delta);
 		if (this.options.id === 'brick-breaker-100') this.updateBreaker(delta);
 		if (this.options.id === 'space-invaders-100') this.updateInvaders(delta);
 		if (this.options.id === 'super-platformer') this.updatePlatformer(delta);
@@ -194,13 +224,17 @@ export class ClassicArcadeGame {
 
 	private updateBreaker(delta: number) {
 		const move = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
-		this.paddle.x = clamp(this.paddle.x + move * delta * 620, 10, this.width - this.paddle.w - 10);
+		if (this.pointerX !== null) {
+			this.paddle.x = clamp(this.pointerX - this.paddle.w / 2, 10, this.width - this.paddle.w - 10);
+		} else {
+			this.paddle.x = clamp(this.paddle.x + move * delta * 620, 10, this.width - this.paddle.w - 10);
+		}
 		this.ball.x += this.ball.vx * delta;
 		this.ball.y += this.ball.vy * delta;
 
 		if (this.ball.x < this.ball.r || this.ball.x > this.width - this.ball.r) this.ball.vx *= -1;
 		if (this.ball.y < 54) this.ball.vy = Math.abs(this.ball.vy);
-		if (this.ball.y > this.height + 30) {
+		if (this.ball.y > this.height + 30 && this.safeTimer <= 0) {
 			this.state = 'gameover';
 			return;
 		}
@@ -255,11 +289,14 @@ export class ClassicArcadeGame {
 
 	private updateInvaders(delta: number) {
 		const move = this.input('d', 'arrowright') - this.input('a', 'arrowleft');
-		this.invaderPlayer.x = clamp(this.invaderPlayer.x + move * delta * 410, 12, this.width - this.invaderPlayer.w - 12);
+		if (this.pointerX !== null) {
+			this.invaderPlayer.x = clamp(this.pointerX - this.invaderPlayer.w / 2, 12, this.width - this.invaderPlayer.w - 12);
+		} else {
+			this.invaderPlayer.x = clamp(this.invaderPlayer.x + move * delta * 410, 12, this.width - this.invaderPlayer.w - 12);
+		}
 		this.invaderPlayer.cooldown -= delta;
 		if (this.keys.has(' ') && this.invaderPlayer.cooldown <= 0) {
-			this.shots.push({ x: this.invaderPlayer.x + this.invaderPlayer.w / 2, y: this.invaderPlayer.y, vy: -560, from: 'player' });
-			this.invaderPlayer.cooldown = Math.max(0.12, 0.28 - this.level * 0.001);
+			this.fireInvaderShot();
 		}
 
 		const living = this.enemies.filter((enemy) => enemy.alive);
@@ -268,7 +305,7 @@ export class ClassicArcadeGame {
 		for (const enemy of living) {
 			enemy.x += this.enemyDirection * enemySpeed * delta;
 			if (enemy.x < 16 || enemy.x + enemy.w > this.width - 16) edge = true;
-			if (enemy.y + enemy.h > this.invaderPlayer.y - 10) this.state = 'gameover';
+			if (enemy.y + enemy.h > this.invaderPlayer.y - 10 && this.safeTimer <= 0) this.state = 'gameover';
 		}
 		if (edge) {
 			this.enemyDirection *= -1;
@@ -296,7 +333,7 @@ export class ClassicArcadeGame {
 					this.score += 25 * this.level;
 					this.shots.splice(i, 1);
 				}
-			} else if (pointRect(shot.x, shot.y, this.invaderPlayer)) {
+			} else if (pointRect(shot.x, shot.y, this.invaderPlayer) && this.safeTimer <= 0) {
 				this.state = 'gameover';
 			}
 		}
@@ -304,7 +341,7 @@ export class ClassicArcadeGame {
 	}
 
 	private resetPlatformer() {
-		this.hero = { x: 60, y: 420, w: 34, h: 46, vx: 0, vy: 0, grounded: false };
+		this.hero = { x: 60, y: this.height - 118, w: 34, h: 46, vx: 0, vy: 0, grounded: false };
 		this.cameraX = 0;
 		this.flagX = 1400 + this.level * 18;
 		this.platforms = [{ x: 0, y: this.height - 54, w: this.flagX + 500, h: 54 }];
@@ -317,6 +354,17 @@ export class ClassicArcadeGame {
 			this.coins.push({ x: x + 45, y: y - 28, taken: false });
 			if (i % 3 === 1) this.walkers.push({ x: x + 15, y: this.height - 88, w: 30, h: 30, vx: 42 + this.level * 0.8, alive: true });
 		}
+	}
+
+	private fireInvaderShot() {
+		if (this.invaderPlayer.cooldown > 0) return;
+		this.shots.push({
+			x: this.invaderPlayer.x + this.invaderPlayer.w / 2,
+			y: this.invaderPlayer.y,
+			vy: -560,
+			from: 'player'
+		});
+		this.invaderPlayer.cooldown = Math.max(0.12, 0.28 - this.level * 0.001);
 	}
 
 	private updatePlatformer(delta: number) {
@@ -345,7 +393,7 @@ export class ClassicArcadeGame {
 		}
 		this.hero.x = Math.max(0, this.hero.x);
 		this.cameraX = clamp(this.hero.x - this.width * 0.34, 0, this.flagX - this.width + 420);
-		if (this.hero.y > this.height + 120) this.state = 'gameover';
+		if (this.hero.y > this.height + 120 && this.safeTimer <= 0) this.state = 'gameover';
 
 		for (const coin of this.coins) {
 			if (!coin.taken && rectsOverlap(this.hero, { x: coin.x - 10, y: coin.y - 10, w: 20, h: 20 })) {
@@ -365,7 +413,7 @@ export class ClassicArcadeGame {
 					walker.alive = false;
 					this.hero.vy = -300;
 					this.score += 100 * this.level;
-				} else {
+				} else if (this.safeTimer <= 0) {
 					this.state = 'gameover';
 				}
 			}
