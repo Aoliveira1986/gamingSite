@@ -7,7 +7,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@sveltejs/adapter-node": "^5.2.9",
@@ -23,6 +24,7 @@
     "@types/node": "^22.9.0",
     "@types/three": "^0.184.1",
     "svelte-check": "^4.1.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "wrangler": "^4.95.0"
   }
 }
